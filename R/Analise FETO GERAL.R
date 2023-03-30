@@ -36,6 +36,10 @@ ggplot(data = FETO_GERAL, mapping = aes(x = `TRATAMENTO`, y = `(%) CEREBRO`)) +
 ggplot(data = sem_out, mapping = aes(x = `TRATAMENTO`, y = `(%) CEREBRO`)) +
   geom_boxplot()
 
+## TESTE DE NORMALIDADE
+
+shapiro.test(sem_out$`(%) CEREBRO`)
+
 ## GRÁFICO DE BARRAS DE MÉDIAS E ERROS - sem outlier
 
 p_load(tidyverse, ggplot2, ggpubr)
@@ -52,6 +56,11 @@ ggplot(data = sem_out) +
 
 mod <- aov(`(%) CEREBRO` ~ `TRATAMENTO`, data = sem_out)
 summary(mod)
+
+## TESTE RESIDUOS ANOVA
+
+plotResiduals(mod)
+testResiduals(mod)
 
 ## TESTE DE BONFERRONI - COMPARAÇOES MULTIPLAS
 
@@ -84,6 +93,10 @@ ggplot(data = sem_out_figado, mapping = aes(x = `FÍGADO`, y = ..density..)) +
 ggplot(data = sem_out_figado, mapping = aes(x = `TRATAMENTO`, y = `FÍGADO`)) +
   geom_boxplot()
 
+## TESTE DE NORMALIDADE
+
+shapiro.test(sem_out_figado$FÍGADO)
+
 ## GRÁFICO DE BARRAS DE MÉDIAS E ERROS - sem outlier
 
 p_load(tidyverse, ggplot2, ggpubr)
@@ -100,6 +113,11 @@ ggplot(data = sem_out_figado) +
 
 mod_figado <- aov(`FÍGADO` ~ `TRATAMENTO`, data = sem_out_figado)
 summary(mod_figado)
+
+## TESTE RESIDUOS ANOVA
+
+plotResiduals(mod_figado)
+testResiduals(mod_figado)
 
 ## TESTE DE BONFERRONI - COMPARAÇOES MULTIPLAS
 
@@ -127,6 +145,10 @@ ggplot(data = sem_out_pcpf, mapping = aes(x = `PC/PF`, y = ..density..)) +
 ggplot(data = sem_out_pcpf, mapping = aes(x = `TRATAMENTO`, y = `PC/PF`)) +
   geom_boxplot()
 
+## TESTE DE NORMALIDADE
+
+shapiro.test(sem_out_pcpf$`PC/PF`)
+
 ## GRÁFICO DE BARRAS DE MÉDIAS E ERROS - sem outlier
 
 p_load(tidyverse, ggplot2, ggpubr)
@@ -143,6 +165,11 @@ ggplot(data = sem_out_pcpf) +
 
 mod_pcpf <- aov(`PC/PF` ~ `TRATAMENTO`, data = sem_out_pcpf)
 summary(mod_pcpf)
+
+## TESTE RESIDUOS ANOVA
+
+plotResiduals(mod_pcpf)
+testResiduals(mod_pcpf)
 
 ## TESTE DE LSD - COMPARAÇOES MULTIPLAS
 
