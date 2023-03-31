@@ -10,9 +10,11 @@ library(ggpubr)
 library(tidyverse)
 library(agricolae)
 
-#################### ANÁLISE TABELA FETO GERAL ###############################
+###################### ANÁLISE TABELA FETO GERAL ###############################
 
 ##### VARIÁVEL `(%) CEREBRO`
+
+summary(FETO_GERAL$`(%) CEREBRO`)
 
 ## GRÁFICO DE FREQUÊNCIAS POR DENSIDADE, SEPARANDO TRATAMENTOS DIFERENTES POR COR
 
@@ -29,7 +31,8 @@ ggplot(data = sem_out, mapping = aes(x = `(%) CEREBRO`, y = ..density..)) +
 ## BOXPLOT
 
 ggplot(data = FETO_GERAL, mapping = aes(x = `TRATAMENTO`, y = `(%) CEREBRO`)) +
-  geom_boxplot()
+  geom_boxplot() +
+  ggtitle("Boxplot da variável '(%) CEREBRO'")
 
 # ELIMINANDO OUTLIER
 
@@ -39,6 +42,7 @@ ggplot(data = sem_out, mapping = aes(x = `TRATAMENTO`, y = `(%) CEREBRO`)) +
 ## TESTE DE NORMALIDADE
 
 shapiro.test(sem_out$`(%) CEREBRO`)
+ggqqplot(sem_out$`(%) CEREBRO`)
 
 ## GRÁFICO DE BARRAS DE MÉDIAS E ERROS - sem outlier
 
@@ -55,9 +59,9 @@ ggplot(data = sem_out) +
 ## ANOVA - sem outlier
 
 mod <- aov(`(%) CEREBRO` ~ `TRATAMENTO`, data = sem_out)
-summary(mod)
+anova(mod)
 
-## TESTE RESIDUOS ANOVA
+## TESTE RESIDUOS
 
 plotResiduals(mod)
 testResiduals(mod)
@@ -88,14 +92,16 @@ sem_out_figado <- filter(FETO_GERAL, `FÍGADO` < 0.75)
 ggplot(data = sem_out_figado, mapping = aes(x = `FÍGADO`, y = ..density..)) +
   geom_freqpoly(mapping = aes(colour = `TRATAMENTO`), size = 1.5)
 
-## BOXPLOT - sem outlier
+## BOXPLOT
 
-ggplot(data = sem_out_figado, mapping = aes(x = `TRATAMENTO`, y = `FÍGADO`)) +
-  geom_boxplot()
+ggplot(data = FETO_GERAL, mapping = aes(x = `TRATAMENTO`, y = `FÍGADO`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável 'FÍGADO'")
 
 ## TESTE DE NORMALIDADE
 
 shapiro.test(sem_out_figado$FÍGADO)
+ggqqplot(sem_out_figado$FÍGADO)
 
 ## GRÁFICO DE BARRAS DE MÉDIAS E ERROS - sem outlier
 
@@ -140,14 +146,16 @@ sem_out_pcpf <- filter(FETO_GERAL, `PC/PF` < 5)
 ggplot(data = sem_out_pcpf, mapping = aes(x = `PC/PF`, y = ..density..)) +
   geom_freqpoly(mapping = aes(colour = `TRATAMENTO`), size = 1.5)
 
-## BOXPLOT - sem outlier
+## BOXPLOT
 
-ggplot(data = sem_out_pcpf, mapping = aes(x = `TRATAMENTO`, y = `PC/PF`)) +
-  geom_boxplot()
+ggplot(data = FETO_GERAL, mapping = aes(x = `TRATAMENTO`, y = `PC/PF`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável 'PC/PF'")
 
 ## TESTE DE NORMALIDADE
 
 shapiro.test(sem_out_pcpf$`PC/PF`)
+ggqqplot(sem_out_pcpf$`PC/PF`)
 
 ## GRÁFICO DE BARRAS DE MÉDIAS E ERROS - sem outlier
 
