@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Apresentação resultados da análise"
 author: "Leonardo de Mattos Galhardo e Victor Hugo Lopes Moreira"
 date: '2023-04-11'
 output: html_document
@@ -10,8 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 \
-
-# **Apresentação resultados da análise**
 
   Neste documento, apresentaremos o que foi desenvolvido e analisado, até o momento, dos dados dos fetos e de suas respectivas mães. Essa apresentação será divida entre a análise das duas tabelas, em partes.
 
@@ -30,11 +28,11 @@ library(writexl)
 
 \
 
-## Tabela "FETO_GERAL"
+# **Tabela "FETO_GERAL"**
 
   Nessa seção, analisamos algumas das variávies dos fetos de camundongo 
 
-### Carregando a tabela
+## Carregando a tabela
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 (dados_feto <- read_excel("D:/UFMG 2023.1/Lab 1/Rodada 1/Dados/RESULTADOS Corrigido 24-03.xlsx", 
@@ -45,7 +43,7 @@ library(writexl)
                                                              "numeric")))
 ```
 
-### Gráfico de correlação dos dados
+## Gráfico de correlação dos dados
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 cor <- dados_feto %>% select(`Placenta-PESO`,PESO,`Eficiência Placentária`,
@@ -57,7 +55,7 @@ ggpairs(cor)
 
   Pelo gráfico de correlações podemos visualizar um pouco melhor como as variáveis da tabela se relacionam entre si, além de como os dados das variáveis se distribuem. Algumas dessas correlações positivas são óbvias, como "`(%) FÍGADO`" e "`FÍGADO `" ou "`(%) CEREBRO`" e "`CEREBRO`", que são variávies que são medidas diferentes para a mesma coisa.
 
-### Boxplots
+## Boxplots
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Boxplot Placenta-Peso por tipo de tratamento
@@ -117,7 +115,7 @@ ggplot(data = dados_feto, mapping = aes(x = TRATAMENTO, y = `DIAMETRO MEDIO PLAC
 
   Pela análise dos Boxplots, podemos perceber que, alguns chamam mais atenção quanto às diferenças entre grupos de tratamento. Sendo assim, vale maior atenção nas comparações múltiplas entre os diferentes tratamentos das variáveis: "DIAMETRO MEDIO PLACENTA", "FIGADO", "(%) CEREBRO", "COMPRIMENTO" e "PESO".
   
-### Gráfico de barras de erros
+## Gráfico de barras de erros
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Gráfico de barras de erro para Placenta-PESO por tipo de tratamento
