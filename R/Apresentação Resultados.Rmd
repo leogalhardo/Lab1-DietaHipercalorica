@@ -1,0 +1,211 @@
+---
+title: "Untitled"
+author: "Leonardo de Mattos Galhardo e Victor Hugo Lopes Moreira"
+date: '2023-04-11'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\
+
+# **Apresentação resultados da análise**
+
+  Neste documento, apresentaremos o que foi desenvolvido e analisado, até o momento, dos dados dos fetos e de suas respectivas mães. Essa apresentação será divida entre a análise das duas tabelas, em partes.
+
+Antes de começar os pacotes utilizados foram:
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(readxl)
+library(GGally)
+library(ggpubr)
+library(agricolae)
+library(rstatix)
+library(writexl)
+
+```
+
+\
+
+## Tabela "FETO_GERAL"
+
+  Nessa seção, analisamos algumas das variávies dos fetos de camundongo 
+
+### Carregando a tabela
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+(dados_feto <- read_excel("D:/UFMG 2023.1/Lab 1/Rodada 1/Dados/RESULTADOS Corrigido 24-03.xlsx", 
+                         sheet = "FETO GERAL", col_types = c("numeric", 
+                                                             "text", "numeric", "numeric", "numeric", 
+                                                             "numeric", "numeric", "numeric", 
+                                                             "numeric", "numeric", "numeric", 
+                                                             "numeric")))
+```
+
+### Gráfico de correlação dos dados
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+cor <- dados_feto %>% select(`Placenta-PESO`,PESO,`Eficiência Placentária`,
+                               COMPRIMENTO,`(%) CEREBRO`,CEREBRO,
+                             `(%) FÍGADO`,FÍGADO,`PC/PF`,`DIAMETRO MEDIO PLACENTA`)
+
+ggpairs(cor)
+```
+
+  Pelo gráfico de correlações podemos visualizar um pouco melhor como as variáveis da tabela se relacionam entre si, além de como os dados das variáveis se distribuem. Algumas dessas correlações positivas são óbvias, como "`(%) FÍGADO`" e "`FÍGADO `" ou "`(%) CEREBRO`" e "`CEREBRO`", que são variávies que são medidas diferentes para a mesma coisa.
+
+### Boxplots
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Boxplot Placenta-Peso por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = `TRATAMENTO`, y = `Placenta-PESO`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável 'Placenta-Peso'")
+
+# Boxplot PESO por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = `TRATAMENTO`, y = PESO)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável 'PESO'")
+
+# Boxplot Eficiência Placentária por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = `TRATAMENTO`, y = `Eficiência Placentária`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável 'Eficiência Placentária'")
+
+# Boxplot COMPRIMENTO por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = `TRATAMENTO`, y = COMPRIMENTO)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável 'COMPRIMENTO'")
+
+# Boxplot '(%) CEREBRO' por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = `TRATAMENTO`, y = `(%) CEREBRO`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável '(%) CEREBRO'")
+
+
+# Boxplot CEREBRO por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = `TRATAMENTO`, y = CEREBRO)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável CEREBRO")
+
+# Boxplot `(%) FÍGADO` por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = TRATAMENTO, y = `(%) FÍGADO`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `(%) FÍGADO`")
+
+
+# Boxplot FÍGADO` por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = TRATAMENTO, y = FÍGADO)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável FÍGADO")
+
+
+# Boxplot `PC/PF` por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = TRATAMENTO, y = `PC/PF`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `PC/PF`")
+
+
+# Boxplot `DIAMETRO MEDIO PLACENTA` por tipo de tratamento
+ggplot(data = dados_feto, mapping = aes(x = TRATAMENTO, y = `DIAMETRO MEDIO PLACENTA`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `DIAMETRO MEDIO PLACENTA`")
+```
+
+  Pela análise dos Boxplots, podemos perceber que, alguns chamam mais atenção quanto às diferenças entre grupos de tratamento. Sendo assim, vale maior atenção nas comparações múltiplas entre os diferentes tratamentos das variáveis: "DIAMETRO MEDIO PLACENTA", "FIGADO", "(%) CEREBRO", "COMPRIMENTO" e "PESO".
+  
+### Gráfico de barras de erros
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Gráfico de barras de erro para Placenta-PESO por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = `Placenta-PESO`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = `Placenta-PESO`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para PESO por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = PESO), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = PESO),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para Eficiência Placentária por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = `Eficiência Placentária`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = `Eficiência Placentária`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para COMPRIMENTO por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = COMPRIMENTO), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = COMPRIMENTO),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `(%) FÍGADO` por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = `(%) FÍGADO`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = `(%) FÍGADO`),
+           stat = "summary",
+           fun = "mean")
+
+
+
+# Gráfico de barras de erro para FÍGADO por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = FÍGADO), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = FÍGADO),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `PC/PF` por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = `PC/PF`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = `PC/PF`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `DIAMETRO MEDIO PLACENTA` por tipo de tratamento
+
+ggplot(data = dados_feto) +
+  geom_errorbar(mapping = aes(x = `TRATAMENTO`, y = `DIAMETRO MEDIO PLACENTA`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `TRATAMENTO`, y = `DIAMETRO MEDIO PLACENTA`),
+           stat = "summary",
+           fun = "mean")
+
+```
+
+  O gráfico de barras de erro nos mostra as médias e o erro padrão dentro de cada tratamento. 
