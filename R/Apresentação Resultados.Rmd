@@ -2,7 +2,9 @@
 title: "Apresentação resultados da análise"
 author: "Leonardo de Mattos Galhardo e Victor Hugo Lopes Moreira"
 date: '2023-04-11'
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -26,7 +28,6 @@ library(writexl)
 
 ```
 
-\
 
 # **Tabela "FETO_GERAL"**
 
@@ -35,12 +36,12 @@ library(writexl)
 ## Carregando a tabela
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-(dados_feto <- read_excel("D:/UFMG 2023.1/Lab 1/Rodada 1/Dados/RESULTADOS Corrigido 24-03.xlsx", 
+dados_feto <- read_excel("D:/UFMG 2023.1/Lab 1/Rodada 1/Dados/RESULTADOS Corrigido 24-03.xlsx", 
                          sheet = "FETO GERAL", col_types = c("numeric", 
                                                              "text", "numeric", "numeric", "numeric", 
                                                              "numeric", "numeric", "numeric", 
                                                              "numeric", "numeric", "numeric", 
-                                                             "numeric")))
+                                                             "numeric"))
 ```
 
 ## Gráfico de correlação dos dados
@@ -206,4 +207,800 @@ ggplot(data = dados_feto) +
 
 ```
 
-  O gráfico de barras de erro nos mostra as médias e o erro padrão dentro de cada tratamento. 
+  O gráfico de barras de erro nos mostra as médias e o erro padrão dentro de cada tratamento.
+  
+## Tabela Descritiva por Tratamento
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+dados_coco <- dados_feto %>% filter(TRATAMENTO == "COCONUT")
+
+(descritiva_coco <- dados_coco %>% get_summary_stats(`Placenta-PESO`,PESO,
+                                               `Eficiência Placentária`,
+                                               COMPRIMENTO,`(%) FÍGADO`,FÍGADO,
+                                               `PC/PF`,`DIAMETRO MEDIO PLACENTA`))
+
+
+dados_cont <- dados_feto %>% filter(TRATAMENTO == "CONTROLE")
+
+(descritiva_cont <- dados_cont %>% get_summary_stats(`Placenta-PESO`,PESO,
+                                                    `Eficiência Placentária`,
+                                                    COMPRIMENTO,`(%) FÍGADO`,FÍGADO,
+                                                    `PC/PF`,`DIAMETRO MEDIO PLACENTA`))
+
+
+dados_lard <- dados_feto %>% filter(TRATAMENTO == "LARD")
+
+(descritiva_lard <- dados_lard %>% get_summary_stats(`Placenta-PESO`,PESO,
+                                                    `Eficiência Placentária`,
+                                                    COMPRIMENTO,`(%) FÍGADO`,FÍGADO,
+                                                    `PC/PF`,`DIAMETRO MEDIO PLACENTA`))
+
+
+dados_soy <- dados_feto %>% filter(TRATAMENTO == "SOYBEAN")
+
+(descritiva_soy <- dados_soy %>% get_summary_stats(`Placenta-PESO`,PESO,
+                                                    `Eficiência Placentária`,
+                                                    COMPRIMENTO,`(%) FÍGADO`,FÍGADO,
+                                                    `PC/PF`,`DIAMETRO MEDIO PLACENTA`))
+
+```
+
+
+## Análise de Normalidade
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# QQ Normal Plot do ggpubr
+ggqqplot(dados_feto$`Placenta-PESO`)
+ggqqplot(dados_feto$PESO)
+ggqqplot(dados_feto$`Eficiência Placentária`)
+ggqqplot(dados_feto$COMPRIMENTO)
+ggqqplot(dados_feto$`(%) CEREBRO`)
+ggqqplot(dados_feto$CEREBRO)
+ggqqplot(dados_feto$`(%) FÍGADO`)
+ggqqplot(dados_feto$FÍGADO)
+ggqqplot(dados_feto$`PC/PF`)
+ggqqplot(dados_feto$`DIAMETRO MEDIO PLACENTA`)
+
+# Teste de Shapiro-Wilk
+shapiro.test(dados_feto$`Placenta-PESO`) #Apresenta Normalidade
+shapiro.test(dados_feto$PESO)#Não Apresenta Normalidade
+shapiro.test(dados_feto$`Eficiência Placentária`)# Apresenta Normalidade
+shapiro.test(dados_feto$COMPRIMENTO)#Não Apresenta Normalidade
+shapiro.test(dados_feto$`(%) CEREBRO`)#Não Apresenta Normalidade
+shapiro.test(dados_feto$CEREBRO)#Não Apresenta Normalidade
+shapiro.test(dados_feto$`(%) FÍGADO`)# Apresenta Normalidade
+shapiro.test(dados_feto$FÍGADO)#Não Apresenta Normalidade
+shapiro.test(dados_feto$`PC/PF`)#Não Apresenta Normalidade
+shapiro.test(dados_feto$`DIAMETRO MEDIO PLACENTA`)# Apresenta Normalidade
+```
+
+  Atráves da análise dos 'qqplots' e dos testes de Shapiro-Wilk, temos que, apenas as variáveis 'Placenta-PESO', 'Eficiência Placentária', 'FÍGADO' e 'DIAMETRO MEDIO PLACENTA' apresentam normalidade. Todas as demais variáveis não apresentam normalidade.
+  
+## Testes de Hipótese
+
+  Nessa seção dividimos os testes paramétricos para aquelas variáveis que apresentaram normalidade, e os não-paramétricos para aqueles que não apresentaram normalidade.
+  
+### Paramétricos
+
+#### Placenta-PESO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`Placenta-PESO` ~ `TRATAMENTO`, data = dados_feto)
+anova(mod)
+```
+
+  Pelo p-valor da tabela ANOVA temos indícios de que os diferentes grupos de tratamento da variável 'Placenta-PESO', não apresentam diferenças estatisticamente significantes.
+
+#### Eficiência Placentária
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`Eficiência Placentária` ~ `TRATAMENTO`, data = dados_feto)
+anova(mod)# os grupos apresentam diferença significativa
+
+bonferroni <- LSD.test(mod, "TRATAMENTO", p.adj="bonferroni", group=TRUE)
+print(bonferroni)
+```
+
+  Agora no teste para 'Eficiência Placentária' tivemos indícios de diferenças entre tratamentos na tabela ANOVA. Para analisar essas diferenças, fizemos o teste de comparações múltiplas de Bonferroni. Pelo teste, o grupo 'Banha' foi o único estatisticamente igual a todos outros, 'Soja se diferenciou de 'Controle' e 'Coco'.
+
+#### FÍGADO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`(%) FÍGADO` ~ `TRATAMENTO`, data = dados_feto)
+anova(mod)
+
+bonferroni <- LSD.test(mod, "TRATAMENTO", p.adj="bonferroni", group=TRUE)
+print(bonferroni)
+```
+
+  A variável 'FÍGADO' também indicou que deveriamos fazer o teste de bonferroni. Nele descobrimos resultados similares aos encontrados para 'Eficiência Placentária'
+  
+#### DIAMETRO MEDIO PLACENTA  
+  
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`DIAMETRO MEDIO PLACENTA` ~ `TRATAMENTO`, data = dados_feto)
+anova(mod)
+
+bonferroni <- LSD.test(mod, "TRATAMENTO", p.adj="bonferroni", group=TRUE)
+print(bonferroni)
+```
+
+  Por último no teste para a variável 'DIAMETRO MEDIO PLACENTA', encontramos evidências de que o grupo 'Banha' é significativamente diferente de todos outros grupos, que se assemelham entre si.
+  
+### Não-Paramétricos
+
+#### PESO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(PESO ~ factor(TRATAMENTO),dados_feto) # os grupos apresentam diferença significativa
+
+pairwise.wilcox.test(dados_feto$PESO, factor(dados_feto$TRATAMENTO),
+                     p.adjust.method = "none")
+```
+
+  Analisando a variável 'PESO', tivemos indícios de diferenças significativas entre grupos, pelo teste de Kruskal-Wallis, já fazendo o teste de Wilcox, podemos ver quais grupos tem evidências significativas de diferenças entre si.
+  
+#### COMPRIMENTO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(COMPRIMENTO ~ factor(TRATAMENTO),dados_feto) # os grupos apresentam diferença significativa
+
+pairwise.wilcox.test(dados_feto$COMPRIMENTO, factor(dados_feto$TRATAMENTO),
+                     p.adjust.method = "none")
+```
+
+  Similarmente ao que fizemos com a variável 'PESO', fizemos o mesmo processo para chegar nas conclusões para a variável 'COMPRIMENTO'.
+  
+#### (%) CEREBRO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`(%) CEREBRO` ~ factor(TRATAMENTO),dados_feto) # os grupos apresentam diferença significativa
+
+pairwise.wilcox.test(dados_feto$`(%) CEREBRO`, factor(dados_feto$TRATAMENTO),
+                     p.adjust.method = "none")
+```
+
+  Para a variável '(%) CEREBRO' fizemos o mesmo processo. No resultado, levando em conta 5% de significância, encontramos que para essa variável o grupo 'Coco' se diferencia de todos demais, além de 'Soja' se diferenciar significativamente de 'Controle'.
+  
+#### CEREBRO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`CEREBRO` ~ factor(TRATAMENTO),dados_feto) # os grupos não apresentam diferença significativa
+```
+
+  Diferente da variável '(%) CEREBRO', a variável 'CEREBRO' não apresentou evidências de diferenças entre grupos de tratamento.
+  
+#### (%) FÍGADO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`(%) FÍGADO` ~ factor(TRATAMENTO),dados_feto) # os grupos apresentam diferença significativa
+
+pairwise.wilcox.test(dados_feto$`(%) FÍGADO`, factor(dados_feto$TRATAMENTO),
+                     p.adjust.method = "none")
+```
+
+  Para a variável '(%) FÍGADO' encontramos que o grupo 'Coco' apresenta diferença significativa com todos demais e somente ele difere.
+  
+#### FÍGADO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`FÍGADO` ~ factor(TRATAMENTO),dados_feto) # os grupos apresentam diferença significativa
+
+pairwise.wilcox.test(dados_feto$`FÍGADO`, factor(dados_feto$TRATAMENTO),
+                     p.adjust.method = "none")
+```
+
+  Já para a variável 'FÍGADO' encontramos que o grupo 'Controle' apresenta diferença significativa com todos excetos 'Coco', sendo essas as únicas diferenças.
+  
+#### PC/PF
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`PC/PF` ~ factor(TRATAMENTO),dados_feto) # os grupos apresentam diferença significativa
+```
+
+  Por último, para a variável 'PC/PF', não tivemos evidências significativas de diferenças entre grupos de tratamento.
+
+# **Tabela "MÃE GERAL"**
+
+## Carregando a tabela
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+dados_mae <- read_excel("D:/UFMG 2023.1/Lab 1/Rodada 1/Dados/RESULTADOS Corrigido 24-03.xlsx", 
+                                         sheet = "MÃE GERAL", col_types = c("numeric", 
+                                                                            "text", "numeric", "numeric", "numeric", 
+                                                                            "numeric", "numeric", "numeric", 
+                                                                            "numeric", "numeric", "numeric", 
+                                                                            "numeric", "numeric", "numeric", 
+                                                                            "numeric", "numeric", "numeric", 
+                                                                            "numeric", "numeric", "numeric", 
+                                                                            "numeric", "numeric", "numeric"))
+```
+
+## Boxplots
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Boxplot PESO 0 por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `PESO 0`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `PESO 0`")
+
+# Boxplot PESO FINAL por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `PESO FINAL`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `PESO FINAL`")
+
+# Boxplot `GANHO DE PESO` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `GANHO DE PESO`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `GANHO DE PESO`")
+
+# Boxplot `N. FETOS` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `N. FETOS`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `N. FETOS`")
+
+
+# Boxplot `figado (%)` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `figado (%)`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `figado (%)`")
+
+# Boxplot FÍGADO por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = FÍGADO)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `FÍGADO`")
+
+
+# Boxplot `baço (%)` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `baço (%)`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `baço (%)`")
+
+# Boxplot BAÇO por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = BAÇO)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `BAÇO`")
+
+
+# Boxplot `G ABD (%)` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `G ABD (%)`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `G ABD (%)`")
+
+
+# Boxplot `G ABDOMINAL` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `G ABDOMINAL`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `G ABDOMINAL`")
+
+# Boxplot `GGD (%)` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `GGD (%)`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `GGD (%)`")
+
+
+# Boxplot `GG D.` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `GG D.`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `GG D.`")
+
+
+# Boxplot `GGE (%)` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `GGE (%)`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `GGE (%)`")
+
+
+# Boxplot `GG ES.` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `GG ES.`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `GG ES.`")
+
+# Boxplot `OVA D (%)` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `OVA D (%)`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `OVA D (%)`")
+
+# Boxplot `OVÁRIO D.` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `OVÁRIO D.`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `OVÁRIO D.`")
+
+# Boxplot `OVA E (%)` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `OVA E (%)`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `OVA E (%)`")
+
+# Boxplot `OVÁRIO E.` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `OVÁRIO E.`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `OVÁRIO E.`")
+
+
+# Boxplot `N. TENTATIVAS COPULA` por grupo
+ggplot(data = dados_mae, mapping = aes(x = `GRUPO`, y = `N. TENTATIVAS COPULA`)) +
+  geom_boxplot() +
+  ggtitle("Boxplot da variável `N. TENTATIVAS COPULA`")
+```
+
+  Como já vimos anteriormente, esses são os Boxplots para ajudar a entender um pouco melhor como os dados se distribuem.
+
+## Gráfico de Barras de Erros
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# Gráfico de barras de erro para "PESO 0" por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `PESO 0`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `PESO 0`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `PESO FINAL` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `PESO FINAL`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `PESO FINAL`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `GANHO DE PESO` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `GANHO DE PESO`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `GANHO DE PESO`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `GANHO/FETO` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `GANHO/FETO`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `GANHO/FETO`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `N. FETOS` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `N. FETOS`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `N. FETOS`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `figado (%)` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `figado (%)`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `figado (%)`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `FÍGADO` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `FÍGADO`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `FÍGADO`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `baço (%)` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `baço (%)`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `baço (%)`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `BAÇO` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `BAÇO`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `BAÇO`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `G ABD (%)` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `G ABD (%)`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `G ABD (%)`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `G ABDOMINAL` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `G ABDOMINAL`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `G ABDOMINAL`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `GGD (%)` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `GGD (%)`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `GGD (%)`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `GG D.` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `GG D.`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `GG D.`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `GGE (%)` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `GGE (%)`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `GGE (%)`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `GG ES.` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `GG ES.`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `GG ES.`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `OVA D (%)` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `OVA D (%)`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `OVA D (%)`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `OVÁRIO D.` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `OVÁRIO D.`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `OVÁRIO D.`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `OVA E (%)` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `OVA E (%)`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `OVA E (%)`),
+           stat = "summary",
+           fun = "mean")
+
+
+# Gráfico de barras de erro para `OVÁRIO E.` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `OVÁRIO E.`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `OVÁRIO E.`),
+           stat = "summary",
+           fun = "mean")
+
+# Gráfico de barras de erro para `N. TENTATIVAS COPULA` por Grupo
+
+ggplot(data = dados_mae) +
+  geom_errorbar(mapping = aes(x = `GRUPO`, y = `N. TENTATIVAS COPULA`), 
+                stat = "summary",
+                fun.data = "mean_se") +
+  geom_bar(mapping = aes(x = `GRUPO`, y = `N. TENTATIVAS COPULA`),
+           stat = "summary",
+           fun = "mean")
+```
+
+  Como também já vimos, esses são os gráficos de barras de erros, que auxiliam na interpretação, além de mostrar os valores das médias e dos erros padrões por tratamento
+  
+## Resumo da tabela por tratamento
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+dados_coco <- dados_mae %>% filter(GRUPO == "COCONUT")
+
+descritiva_coco <- dados_coco %>% get_summary_stats(`PESO 0`,`PESO FINAL`,`GANHO DE PESO`,`GANHO/FETO`,
+                                                    `N. FETOS`,`figado (%)`,`FÍGADO`,`baço (%)`,
+                                                    `BAÇO`,`G ABD (%)`,`G ABDOMINAL`,`GGD (%)`,
+                                                    `GG D.`,`GGE (%)`,`GG ES.`,`OVA D (%)`,`OVÁRIO D.`,
+                                                    `OVA E (%)`,`OVÁRIO E.`,`N. TENTATIVAS COPULA`)
+descritiva_coco
+
+
+dados_cont <- dados_mae %>% filter(GRUPO == "CONTROLE")
+
+descritiva_cont <- dados_cont %>% get_summary_stats(`PESO 0`,`PESO FINAL`,`GANHO DE PESO`,`GANHO/FETO`,
+                                                    `N. FETOS`,`figado (%)`,`FÍGADO`,`baço (%)`,
+                                                    `BAÇO`,`G ABD (%)`,`G ABDOMINAL`,`GGD (%)`,
+                                                    `GG D.`,`GGE (%)`,`GG ES.`,`OVA D (%)`,`OVÁRIO D.`,
+                                                    `OVA E (%)`,`OVÁRIO E.`,`N. TENTATIVAS COPULA`)
+
+descritiva_cont
+
+
+
+dados_lard <- dados_mae %>% filter(GRUPO == "LARD")
+
+descritiva_lard <- dados_lard %>% get_summary_stats(`PESO 0`,`PESO FINAL`,`GANHO DE PESO`,`GANHO/FETO`,
+                                                    `N. FETOS`,`figado (%)`,`FÍGADO`,`baço (%)`,
+                                                    `BAÇO`,`G ABD (%)`,`G ABDOMINAL`,`GGD (%)`,
+                                                    `GG D.`,`GGE (%)`,`GG ES.`,`OVA D (%)`,`OVÁRIO D.`,
+                                                    `OVA E (%)`,`OVÁRIO E.`,`N. TENTATIVAS COPULA`)
+
+
+descritiva_lard
+
+dados_soy <- dados_mae %>% filter(GRUPO == "SOYBEAN")
+
+descritiva_soy <- dados_soy %>% get_summary_stats(`PESO 0`,`PESO FINAL`,`GANHO DE PESO`,`GANHO/FETO`,
+                                                  `N. FETOS`,`figado (%)`,`FÍGADO`,`baço (%)`,
+                                                  `BAÇO`,`G ABD (%)`,`G ABDOMINAL`,`GGD (%)`,
+                                                  `GG D.`,`GGE (%)`,`GG ES.`,`OVA D (%)`,`OVÁRIO D.`,
+                                                  `OVA E (%)`,`OVÁRIO E.`,`N. TENTATIVAS COPULA`)
+
+
+descritiva_soy
+```
+
+## Análise de Normalidade
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# QQ Normal Plot do ggpubr
+ggqqplot(dados_mae$`PESO 0`)
+ggqqplot(dados_mae$`PESO FINAL`)
+ggqqplot(dados_mae$`GANHO DE PESO`)
+ggqqplot(dados_mae$`GANHO/FETO`)
+ggqqplot(dados_mae$`N. FETOS`)
+ggqqplot(dados_mae$`figado (%)`)
+ggqqplot(dados_mae$`FÍGADO`)
+ggqqplot(dados_mae$`baço (%)`)
+ggqqplot(dados_mae$`BAÇO`)
+ggqqplot(dados_mae$`G ABD (%)`)
+ggqqplot(dados_mae$`G ABDOMINAL`)
+ggqqplot(dados_mae$`GGD (%)`)
+ggqqplot(dados_mae$`GG D.`)
+ggqqplot(dados_mae$`GGE (%)`)
+ggqqplot(dados_mae$`GG ES.`)
+ggqqplot(dados_mae$`OVA D (%)`)
+ggqqplot(dados_mae$`OVÁRIO D.`)
+ggqqplot(dados_mae$`OVA E (%)`)
+ggqqplot(dados_mae$`OVÁRIO E.`)
+ggqqplot(dados_mae$`N. TENTATIVAS COPULA`)
+
+
+##-------- Teste de Normalidade para as variáveis --------##
+
+
+# Teste de Normalidade Shapiro
+shapiro.test(dados_mae$`PESO 0`) #Apresenta Normalidade
+shapiro.test(dados_mae$`PESO FINAL`)#Apresenta Normalidade
+shapiro.test(dados_mae$`GANHO DE PESO`)#Apresenta Normalidade
+shapiro.test(dados_mae$`GANHO/FETO`)#Apresenta Normalidade
+shapiro.test(dados_mae$`N. FETOS`)#Apresenta Normalidade
+shapiro.test(dados_mae$`figado (%)`)#Apresenta Normalidade
+shapiro.test(dados_mae$`FÍGADO`)#Apresenta Normalidade
+shapiro.test(dados_mae$`baço (%)`)#Apresenta Normalidade
+shapiro.test(dados_mae$`BAÇO`)#Apresenta Normalidade
+shapiro.test(dados_mae$`G ABD (%)`)#Apresenta Normalidade
+shapiro.test(dados_mae$`G ABDOMINAL`)#Apresenta Normalidade
+shapiro.test(dados_mae$`GGD (%)`)#Apresenta Normalidade
+shapiro.test(dados_mae$`GG D.`)#Apresenta Normalidade
+shapiro.test(dados_mae$`GGE (%)`)#Apresenta Normalidade
+shapiro.test(dados_mae$`GG ES.`)#Apresenta Normalidade
+shapiro.test(dados_mae$`OVA D (%)`)#Apresenta Normalidade
+shapiro.test(dados_mae$`OVÁRIO D.`)#Apresenta Normalidade
+shapiro.test(dados_mae$`OVA E (%)`)# Não apresenta Normalidade
+shapiro.test(dados_mae$`OVÁRIO E.`)# Não apresenta Normalidade
+shapiro.test(dados_mae$`N. TENTATIVAS COPULA`)# Não apresenta Normalidade
+```
+
+  Para analisar a Normalidade das variáveis realizamos o gráfico 'qqplot' e realizamos o teste de Shapiro-Wilk
+  
+## Testes de Hipótese
+
+  Como fizemos para a outra tabela, novamente dividiremos em seções os testes não-paramétricos (para variáveis qua não apresentaram Normalidade) e paramétricos (para variáveis qua apresentaram Normalidade)
+  
+### Paramétricos
+
+#### PESO 0
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`PESO 0` ~ `GRUPO`, data = dados_mae)
+anova(mod) # Teste não apresenta diferença entre a média dos grupos
+```
+
+  Como vimos na outra tabela, de acordo com o p-valor dizemos que os grupo são significativamente iguais para a variável 'PESO 0'.
+
+#### PESO FINAL
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`PESO FINAL` ~ `GRUPO`, data = dados_mae)
+anova(mod) # Teste não apresenta diferença entre a média dos grupos
+```
+
+  Novamente, os grupo são significativamente iguais para a variável. E a seguir, vemos uma sequência de variáveis com mesmo resultado.
+  
+#### GANHO DE PESO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`GANHO DE PESO` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### GANHO/FETO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`GANHO/FETO` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### N. FETOS
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`N. FETOS` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### figado (%)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`figado (%)` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### FÍGADO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`FÍGADO` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### baço (%)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`baço (%)` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### BAÇO
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`BAÇO` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### G ABD (%)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`G ABD (%)` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste apresenta diferença entre a média dos grupos
+
+bonferroni <- LSD.test(mod, "GRUPO", p.adj="bonferroni", group=TRUE)
+print(bonferroni)
+```
+
+  Agora, para a variável 'G ABD (%)' temos que, existem evidências de diferenças entre os grupos de tratamento. Sendo 'Banha' o único que não se diferencia significativamente.
+  
+#### G ABDOMINAL
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`G ABDOMINAL` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste apresenta diferença entre a média dos grupos
+
+bonferroni <- LSD.test(mod, "GRUPO", p.adj="bonferroni", group=TRUE)
+print(bonferroni)
+```
+
+  Para a variável 'G ABDOMINAL' temos resultados similares ao resultado anterior.
+  
+#### GGD (%)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`GGD (%)` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+  Agora voltamos a uma variável em que, não temos evidências de diferença entre grupos. Para as próximas variáveis restantes tivemos a mesma conclusão.
+  
+#### GG D.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`GG D.` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### GGE (%)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`GGE (%)` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### GG ES.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`GG ES.` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### OVA D (%)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`OVA D (%)` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+#### OVÁRIO D.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+mod <- aov(`OVÁRIO D.` ~ `GRUPO`, data = dados_mae)
+anova(mod)# Teste não apresenta diferença entre a média dos grupos
+```
+
+### Não-Parmétricos
+
+#### OVA E (%)
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`OVA E (%)` ~ factor(GRUPO),dados_mae) # os grupos não apresentam diferença significativa
+```
+
+  No teste de Kruskal-Wallis não tivemos evidências significativas de diferença entre os grupos de tratamento. A mesma conclusão foi obtida para as outras variáveis não-paramétricas.
+  
+#### OVÁRIO E.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`OVÁRIO E.` ~ factor(GRUPO),dados_mae) # os grupos não apresentam diferença significativa
+```
+
+#### N. TENTATIVAS COPULA
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+kruskal.test(`N. TENTATIVAS COPULA` ~ factor(GRUPO),dados_mae) # os grupos não apresentam diferença significativa
+```
